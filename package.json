@@ -1,0 +1,22 @@
+{
+  "name": "p1",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "start": "nodemon app.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "p1"
+  },
+  "author": "Shubhangi",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^16.0.1",
+    "express": "^4.17.3",
+    "mongoose": "^6.2.3",
+    "node": "^17.4.0",
+    "nodemon": "^2.0.15"
+  }
+}
