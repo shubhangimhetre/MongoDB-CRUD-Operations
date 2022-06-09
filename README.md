@@ -1,7 +1,7 @@
 # MongoDB-CRUD-Operations
 CRUD operation in Node.js with Framework - Express.js and Database - MongoDB.
 Two parts in project and two collection created in database.
-One collection for stuent data and second one is for subject marks with rollNumber of students.
+One collection for student data and second one is for subject marks with rollNumber of students.
 
 Part A. Student Registeration
 
