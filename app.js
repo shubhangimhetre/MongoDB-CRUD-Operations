@@ -17,4 +17,4 @@ mongoose.connect(process.env.db_connect,{useNewUrlParser:true})
 app.use('/student',student_router);
 app.use('/subject',subject_router);
 
-app.listen(process.env.port,()=>console.log("Server is listening.."));
+app.listen(process.env.port,()=>console.log("Server is listening..")); 
