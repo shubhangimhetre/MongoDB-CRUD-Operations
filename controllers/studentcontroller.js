@@ -1,64 +1,124 @@
-const mongoose = require('mongoose');
-const student = require('../model/studentmodel.js');
+const mongoose = require("mongoose");
+const student = require("../model/studentmodel.js");
 
-
-exports.get_student = async (req, res) => {
-    try {
-        var students = await student.find();
-        res.status(200).send(students);
-    } catch (err) {
-        res.status(400).send(err);
-    }
-
+function get_student() {
+  return new Promise(async function (resolve, reject) {
+    student
+      .find()
+      .then((data) => {
+        if (data.length != 0) {
+          return resolve(data);
+        } else {
+          return reject({ status: "Data Not Found" });
+        }
+      })
+      .catch((err) => {
+        return reject({ status: "Server Error" });
+      });
+  });
 }
 
-exports.get_student_by_rollno = async (req, res) => {
-    const rollNo = req.params.rollno;
-    try {
-        const student1 = await student.findOne({ rollNumber: rollNo });
-        res.status(200).send(student1);
-    } catch (err) {
-        res.status(400).send(err);
-    }
+function get_student_by_rollno(rollNo) {
+  return new Promise(async function (resolve, reject) {
+    student
+      .findOne({ rollNumber: rollNo })
+      .then((data) => {
+        if (data) {
+          return resolve(data);
+        } else {
+          return reject({ status: "Student Not Found" });
+        }
+      })
+      .catch((err) => {
+        return reject({ status: "Server Error" });
+      });
+  });
 }
 
-exports.post_student = async (req, res) => {
-    const student_data = new student(req.body);
-    try {
-        const student1 = await student_data.save();
-        res.status(200).send(student1);
-    } catch (err) {
-        res.status(400).send(err);
-    }
+function check_student_Exists(firstName, lastName, phoneNumber, email, rollNo) {
+  return new Promise(async function (resolve, reject) {
+    student.findOne({
+        rollNumber: rollNo,
+        firstName: firstName,
+        lastName: lastName,
+        phoneNumber: phoneNumber,
+        email: email,
+      })
+      .then((result) => {
+        if (result) {
+          return reject({
+            status: "student of given roll number is already present",
+          });
+        }
+        return resolve();
+      })
+
+      .catch((e) => {
+        return reject({ status: "Server Error" });
+      });
+  });
 }
 
-
-exports.update_student = async (req, res) => {
-    const rollNo = req.params.rollno;
-    try {
-        const student1 = await student.findOne({ rollNumber: rollNo });
-        await student1.updateOne(req.body);
-        const updatedstudent1 = await student.findOne({ rollNumber: rollNo });
-        res.status(200).send(updatedstudent1);
-    } catch (err) {
-        res.status(400).send(err);
-    }
+function post_student(firstName, lastName, phoneNumber, email, rollNumber) {
+  return new Promise(async function (resolve, reject) {
+    const student_data = new student({
+      firstName: firstName,
+      lastName: lastName,
+      phoneNumber: phoneNumber,
+      email: email,
+      rollNumber: rollNumber,
+    });
+    student_data
+      .save()
+      .then((data) => {
+        return resolve({ status: "Success" });
+      })
+      .catch((err) => {
+        return reject({ status: "Server Error" });
+      });
+  });
 }
 
-
-exports.delete_student = async (req, res) => {
-    const rollNo = req.params.rollno;
-    try {
-        const student1 = await student.findOne({ rollNumber: rollNo });
-        if (!student1) return res.status(400).send('This roll number is not present.');
-
-        student.deleteOne({ rollNumber: rollNo }, function (err) {
-            if (err)  return res.status(400).send(err);
-            res.status(200).send('deleted successfully');
-        });
-
-    } catch (err) {
-        res.status(400).send(err);
-    }
-
+function update_student(studentId,firstName,lastName,phoneNumber,email,rollNo) {
+  return new Promise(async function (resolve, reject) {
+    student
+      .updateOne(
+        {
+          firstName: firstName,
+          lastName: lastName,
+          phoneNumber: phoneNumber,
+          email: email,
+          rollNumber: rollNo,
+        },
+        {
+          _id: studentId,
+        }
+      )
+      .then((data) => {
+        return resolve({ status: "Success" });
+      })
+      .catch((err) => {
+        return reject({ status: "Server Error" });
+      });
+  });
 }
+
+function delete_student(rollNo) {
+  return new Promise(async function (resolve, reject) {
+    student
+      .deleteOne({ rollNumber: rollNo })
+      .then((data) => {
+        return resolve({ status: "Success" });
+      })
+      .catch((err) => {
+        return reject({ status: "Server Error" });
+      });
+  });
+}
+
+exports.post_student = post_student;
+exports.get_student = get_student;
+exports.get_student_by_rollno = get_student_by_rollno;
+exports.check_student_Exists = check_student_Exists;
+exports.update_student = update_student;
+exports.delete_student = delete_student;

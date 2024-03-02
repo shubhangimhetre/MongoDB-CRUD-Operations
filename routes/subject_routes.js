@@ -1,18 +1,44 @@
 const router=require('express').Router();
 const subjects=require('../controllers/subjectcontroller');
 
-router.get('/get_subject',subjects.get_subjects);
+router.get('/get_subject',function (req, res, next) {
+    subjects.get_subjects(req.query)
+    .then((result) => {
+      if (result) {
+        return res.status(200).json(result);
+      } else{
+        return res.status(400).json({status:"Data Not Found"});
+      }
+      })
+      .catch((e) => {
+        return res.status(400).json(e);
+      });
+});
 
-router.get('/get_subject/:rollno',subjects.get_subjects_byrollno);
+router.post('/post_subject',function (req, res, next) {
 
-router.get('/get_subject_byname/:name',subjects.get_subjects_byname);
+    const {rollNo, english, maths, science } = req.body;
 
-router.get('/get_marks_bysubject/:name/:subject',subjects.get_marks_bysubjects);
+    subjects.post_subjects(rollNo, english, maths,science)
+    .then((result) => {
+        return res.status(200).json(result);
+      })
+      .catch((e) => {
+        return res.status(400).json(e);
+      });
+});
 
-router.post('/post_subject',subjects.post_subjects);
+router.delete('/delete_subject/:rollno',function (req, res, next) {
+    const rollNo = req.params.rollno;
 
-router.put('/update_subject/:rollno',subjects.update_subjects);
+    subjects.delete_subjects(rollNo)
+    .then((result) => {
+        return res.status(200).json(result);
+      })
+      .catch((e) => {
+        return res.status(400).json(e);
+      });
 
-router.delete('/delete_subject/:rollno',subjects.delete_subjects);
+});
 
 module.exports=router;

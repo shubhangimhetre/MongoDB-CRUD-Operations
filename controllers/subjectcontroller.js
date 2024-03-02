@@ -1,185 +1,165 @@
-const mongoose = require('mongoose');
-var subject = require('../model/subjectmodel.js');
-var student = require('../model/studentmodel.js');
+const mongoose = require("mongoose");
+var subject = require("../model/subjectmodel.js");
+var student = require("../model/studentmodel.js");
 
-exports.get_subjects = async (req, res) => {
-    try {
-        const subject1 = await student.aggregate([{
+function get_subjects(query) {
+  return new Promise(function (resolve, reject) {
+    let myPromise
+    if (Object.keys(query).length === 0 && query.constructor === Object){
+      myPromise = new Promise((resolve,reject)=>{
+        student
+        .aggregate([
+          {
             $lookup: {
-                from: "subjects",
-                localField: "rollNumber",
-                foreignField: "rollNumber",
-                as: "marks"
-            }
-        }, {
+              from: "subjects",
+              localField: "rollNumber",
+              foreignField: "rollNumber",
+              as: "marks",
+            },
+          },
+          {
             $project: {
-                _id: 1,
-                firstName: 1,
-                lastName: 1,
-                rollNumber: 1,
-                english: "$marks.english",
-
-                maths: "$marks.maths",
-                science: "$marks.science"
-            }
-        }
-        ])
-        res.status(200).send(subject1)
-    } catch (err) { res.status(400).send(err); }
-
-}
-
-
-
-exports.get_subjects_byrollno = async (req, res) => {
-    const rollNo = req.params.rollno;
-    try {
-        const student1 = await student.findOne({ rollNumber: rollNo });
-        if (!student1) return res.status(400).send('The student of given roll number is not present');
-        try {
-            const subject1 = await student.aggregate([
-                { $match: { rollNumber: Number(req.params.rollno) } },
-                {
-                    $lookup: {
-                        from: "subjects",
-                        localField: "rollNumber",
-                        foreignField: "rollNumber",
-                        as: "marks",
-                    },
-                }, {
-                    $project: {
-                        _id: 1,
-                        firstName: 1,
-                        lastName: 1,
-                        rollNumber: 1,
-                        english: "$marks.english",
-                        maths: "$marks.maths",
-                        science: "$marks.science"
-                    }
-                }
-            ])
-            res.status(200).send(subject1);
-        } catch (err) {
-            res.status(400).send(err);
-        }
-
-    } catch (err) { res.status(400).send(err); }
-}
-
-
-exports.get_subjects_byname = async (req, res) => {
-
-    var student1 = await student.find({ firstName: req.params.name });
-    if (!student1) return res.status(400).send('The student of given roll number is not present');
-
-    try {
-        var student1 = await student.find({ firstName: req.params.name })
-        console.log(student1)
-        console.log(student1[0]["rollNumber"])
-        const subject1 = await student.aggregate([
-            { $match: { rollNumber: Number(student1[0]["rollNumber"]) } },
-            {
-                $lookup: {
-                    from: "subjects",
-                    localField: "rollNumber",
-                    foreignField: "rollNumber",
-                    as: "marks",
-                },
-            }, {
-                $project: {
-                    _id: 1,
-                    firstName: 1,
-                    lastName: 1,
-                    rollNumber: 1,
-                    english: "$marks.english",
-                    maths: "$marks.maths",
-                    science: "$marks.science"
-                }
-            }
-        ])
-        res.status(200).send(subject1);
-    } catch (err) {
-        res.status(400).send(err);
-    }
-
-}
-
-exports.get_marks_bysubjects = async (req, res) => {
-    var student1 = await student.find({ firstName: req.params.name });
-    if (!student1) return res.status(400).send('The student of given roll number is not present');
-    try {
-        var sub = req.params.subject;
-        const subject1 = await student.aggregate([
-            { $match: { rollNumber: Number(student1[0]["rollNumber"]) } },
-            {
-                $lookup: {
-                    from: "subjects",
-                    localField: "rollNumber",
-                    foreignField: "rollNumber",
-                    as: "marks",
-                },
-            }, {
-                $project: {
-                    _id: 1,
-                    firstName: 1,
-                    lastName: 1,
-                    rollNumber: 1,
-                    subject: {
-                        marks: `$marks.${sub}`
-                    }
-                }
-            }
-        ])
-        res.status(200).send(subject1);
-    } catch (err) {
-        res.status(400).send(err);
-    }
-}
-
-
-
-
-
-exports.post_subjects = async (req, res) => {
-    const subject_data = new subject(req.body);
-    try {
-        const student1 = await student.findOne({ rollNumber: req.body.rollNumber });
-        if (!student1) return res.status(400).send('The student of given roll number is not present');
-        const subject1 = await subject_data.save();
-        res.status(200).send(subject1);
-    } catch (err) { res.status(400).send(err); }
-}
-
-
-exports.update_subjects = async (req, res) => {
-    const rollNo = req.params.rollno;
-    try {
-        const student1 = await student.findOne({ rollNumber: rollNo });
-        if (!student1) return res.status(400).send('The student of given roll number is not present');
-        const subject1 = await subject.findOne({ rollNumber: rollNo });
-
-        const update = req.body;
-        await subject1.update(update);
-
-        const updatedsubject1 = await subject.findOne({ rollNumber: rollNo });
-        res.status(200).send(updatedsubject1);
-
-    } catch (err) { res.status(400).send(err); }
-
-}
-
-
-exports.delete_subjects = async (req, res) => {
-    const rollNo = req.params.rollno;
-
-    try {
-        const subject1 = await subject.findOne({ rollNumber: rollNo });
-        if (!subject1) return res.status(400).send('The student of given roll number is not present');
-
-        subject.deleteOne({ rollNumber: rollNo }, function (err) {
-            if (err) res.status(400).send(err);
-            res.status(200).send('deleted successfully');
+              _id: 1,
+              firstName: 1,
+              lastName: 1,
+              rollNumber: 1,
+              english: "$marks.english",
+              maths: "$marks.maths",
+              science: "$marks.science",
+            },
+          },
+        ]).then((result) => {
+          return resolve(result)
+        })
+        .catch((err) => {
+          return reject({status:"Server Error"});
+        });
+      })
+    } else if (query.by=="name" && query.value!=undefined){
+      myPromise = new Promise((resolve, reject) => {
+       student.aggregate([
+          { $match: { name: query.value } },
+          {
+            $lookup: {
+              from: "subjects",
+              localField: "rollNumber",
+              foreignField: "rollNumber",
+              as: "marks",
+            },
+          },
+          {
+            $project: {
+              _id: 1,
+              firstName: 1,
+              lastName: 1,
+              rollNumber: 1,
+              english: "$marks.english",
+              maths: "$marks.maths",
+              science: "$marks.science",
+            },
+          },
+        ]).then((result) => {
+          return resolve(result)
+        })
+        .catch((err) => {
+          return reject({status:"Server Error"});
         });
 
-    } catch (err) { res.status(400).send(err); }
+      });
+
+    } else if (query.by=="rollNo" && query.value!=undefined){
+      myPromise = new Promise((resolve, reject) => {
+        student.aggregate([
+          { $match: { rollNumber: Number(query.value) } },
+          {
+              $lookup: {
+                  from: "subjects",
+                  localField: "rollNumber",
+                  foreignField: "rollNumber",
+                  as: "marks",
+              },
+          }, {
+            $project: {
+              _id: 1,
+              firstName: 1,
+              lastName: 1,
+              rollNumber: 1,
+              marks: { $arrayElemAt: ["$marks", 0] }
+          }
+        
+          }
+      ]).then((result) => {
+        return resolve(result)
+      })
+      .catch((err) => {
+        return reject({status:"Server Error"});
+      });
+    });
+    }
+
+    myPromise
+      .then((result) => {
+        return resolve(result)
+      })
+      .catch((err) => {
+        return reject({status:"Server Error"});
+      });
+  });
 }
+
+function post_subjects(rollNo, english, maths,science) {
+  return new Promise(async function (resolve, reject) {
+ 
+    subject.findOne({ rollNumber: rollNo })
+    .then((result) => {
+        if (result){
+            return subject.updateOne({
+                english:english,
+                maths:maths,
+                science:science},
+            { 
+                rollNumber: rollNo
+            });
+        } else{
+            return new subject({
+                rollNumber: rollNo,
+                english:english,
+                maths:maths,
+                science:science
+             }).save();
+        }
+      })
+      .then((result)=>{
+        return resolve({status:"Success"})
+      })
+      .catch((e) => {
+        return reject({status:"Server Error"});
+      });
+
+  });
+}
+
+
+function delete_subjects(rollNo) {
+  return new Promise(async function (resolve, reject) {
+
+    student.findOne({ rollNumber: rollNo })
+    .then((result) => {
+        if (!result){
+            return reject({status:"student of given roll number is not present"})
+        }
+         return subject.deleteOne({ rollNumber: rollNo })
+      })
+      .then((result)=>{
+        return resolve({status:"Success"})
+      })
+      .catch((e) => {
+        return reject({status:"Server Error"});
+      });
+
+  });
+}
+
+exports.get_subjects = get_subjects;
+exports.post_subjects = post_subjects;
+exports.delete_subjects = delete_subjects;
