@@ -1,0 +1,7 @@
+1. Complete Basic CRUD Operations.
+2. Improve Database Structure.
+3. Docker
+4. Add Admin and Admin Analytics (School Registration)
+5. Separate User APIs for Students 
+6. Dashboard for School
+7. Testing and Try to Add JEST Testcases.
